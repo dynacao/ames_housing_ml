@@ -32,7 +32,7 @@ The goal is to build a highly accurate predictive or descriptive model. To accom
 
 ### Import Libraries
 
-```{r}
+```{r, echo=False}
 library(dplyr)
 library(ggplot2)
 library(lubridate)
@@ -48,11 +48,11 @@ The Ames_Housing_Price_Data.csv set contains  81  data columns, including the ke
 The columns of the data are mostly attributes associated with the land and the houses. There are size related attributes, quality and condition attributes, house attachment attributes, etc.
 
 ```{r}
-housing = read.csv('Ames_HousePrice.csv', header = TRUE)
+housing = read.csv('C:/Users/aznan/Data Science/ML with Python/ML_Project/Ames_HousePrice.csv', header = TRUE)
 ```
 
 ```{r}
-real_estate = read.csv('data/Ames_Real_Estate_Data.csv')
+real_estate = read.csv('C:/Users/aznan/Data Science/ML with Python/ML_Project/Ames Real Estate Data.csv')
 ```
 
 ## Data Pre-Processing
