@@ -1,0 +1,115 @@
+---
+title: "ML Project"
+subtitle: "Complementary Code"
+author: "Daniel Choy, Yi Cao, Danny Zeng"
+date: "Nov 10, 2020"
+output:
+  html_notebook:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+Machine Learning Project - Ames Housing Data
+
+Ames, Iowa is the college town of **Iowa State University**. The Ames housing dataset consists of about $2500$ house sale records between $2006-2010$. Detailed information about the house attributes, along with the sale prices, is recorded in the dataset. The goal of the project is to:
+- perform descriptive data analysis to gain business (i.e. housing market) insights
+- build descriptive machine learning models to understand the local housing market.
+- build predictive machine learning models for the local house price prediction.
+
+
+### Who We Are
+
+Choose (but are not limited to) one of the following options:
+- You are a housing market consultant.
+- You are a data scientist for an online real estate database company which provides house price estimation (like **Zillow** home price estimates) for the site visitors.
+
+The goal is to build a highly accurate predictive or descriptive model. To accomplish this, it is important to understand the local housing market in a **data driven** way. 
+
+### Import Libraries
+
+```{r, echo=False, }
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(tidyverse)
+```
+
+### Load Data
+
+There are two data sets included in the data folder: Ames_Housing_Price_Data.csv and Ames_Real_Estate_Data.csv.
+
+The Ames_Housing_Price_Data.csv set contains  81  data columns, including the key feature SalePrice which will be used as the target of the predictive/descriptive modeling. PID refers to the land parcel ID, which can merged on the MapRefNo column of the Ames Accessor Data (Ames_Real_Estate_Data.csv) to find the property address. Using a free service, such as geopy, we can find the long-lat coordinates of the houses.
+
+The columns of the data are mostly attributes associated with the land and the houses. There are size related attributes, quality and condition attributes, house attachment attributes, etc.
+
+```{r}
+housing = read.csv('./Ames_HousePrice.csv', header = TRUE)
+```
+
+### Data Inspection
+```{r}
+colnames(housing)
+```
+
+```{r}
+str(housing)
+```
+
+### Data PreProcessing
+
+```{r}
+housing_df = housing %>% 
+  
+  # filter out NA's and duplicates
+  filter(is.na(MasVnrArea) != 1) %>%
+  filter(is.na(TotalBsmtSF) != 1) %>%
+  filter(PID != 909276070 & X != 1) %>%
+  
+  # Create new columns for better modeling   
+  mutate(
+    
+    MasVnrArea2 = case_when(
+      MasVnrArea == 0 ~ 0,
+      MasVnrArea != 0 ~ 1),
+    
+    LotFrontage2 = ifelse(is.na(LotFrontage), 0, LotFrontage),
+    
+    Alley2 = ifelse(is.na(LotFrontage), 0, 1),
+    
+    LotShape2 = ifelse(LotShape == 'Reg', 'Regular', 'Irregular'),
+    
+    GarageArea2 = ifelse(is.na(GarageArea), 0, GarageArea),
+    
+    PoolArea2 = ifelse(is.na(PoolArea), 0, PoolArea),
+    
+    PoolArea3 = ifelse(is.na(PoolArea), 0, 1),
+    
+    X2ndFlrSF = ifelse(is.na(X2ndFlrSF), 0, X2ndFlrSF),
+    
+    HalfBath2 = case_when(
+      HalfBath == 1 ~ 0.5,
+      HalfBath == 0 ~ 0),
+    
+    BsmtHalfBath2 = case_when(
+      BsmtHalfBath == 1 ~ 0.5,
+      BsmtHalfBath == 0 ~ 0),
+    # If Basement Finish Type1 is GLQ or ALQ, we use the Basement Finish Square Feet1
+    BasmtFinSF1 = ifelse(BsmtFinType1 == 'GLQ' | BsmtFinType1 == 'ALQ', BsmtFinSF1, 0),
+    # If Basement Finish Type2 is GLQ or ALQ, we use the Basement Finish Square Feet2
+    BasmtFinSF2 = ifelse(BsmtFinType2 == 'GLQ' | BsmtFinType2 =='ALQ', BsmtFinSF2, 0),
+    # The Total Square Feet of Basement Finish is BasmtFinSF1 + BasmtFinSF2
+    BasmtFinSF = BasmtFinSF1 + BasmtFinSF2,
+    # Total Living Area is GrLivArea + BasmtFinSF
+    total_LivArea = GrLivArea + BasmtFinSF,
+    num_bathroom = BsmtHalfBath2 + HalfBath2 + FullBath + BsmtFullBath
+  )
+
+# export to csv
+write.csv(housing_df, file = 'housing_v2.csv')
+
+```
